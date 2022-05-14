@@ -95,6 +95,7 @@ export default class PKPass extends Bundle {
 				Schemas.Template,
 				source,
 				Messages.TEMPLATE.INVALID,
+				source.logger,
 			);
 
 			buffers = await getModelFolderContents(source.model);
@@ -163,7 +164,7 @@ export default class PKPass extends Bundle {
 				this.addBuffer(fileName, contentBuffer);
 			}
 		} else {
-			console.warn(
+			this[loggerSymbol]?.warn?.(
 				Messages.format(Messages.INIT.INVALID_BUFFERS, typeof buffers),
 			);
 		}
@@ -203,6 +204,7 @@ export default class PKPass extends Bundle {
 			Schemas.CertificatesSchema,
 			certs,
 			Messages.CERTIFICATES.INVALID,
+			this[loggerSymbol],
 		);
 
 		this[certificatesSymbol] = certs;
@@ -246,6 +248,7 @@ export default class PKPass extends Bundle {
 			Schemas.TransitType,
 			value,
 			Messages.TRANSIT_TYPE.INVALID,
+			this[loggerSymbol],
 		);
 
 		this[propsSymbol]["boardingPass"].transitType = value;
@@ -343,6 +346,7 @@ export default class PKPass extends Bundle {
 			Schemas.PassType,
 			nextType,
 			Messages.PASS_TYPE.INVALID,
+			this[loggerSymbol],
 		);
 
 		/** Shut up, typescript strict mode! */
@@ -423,7 +427,7 @@ export default class PKPass extends Bundle {
 					validateJSONBuffer(buffer, Schemas.PassProps),
 				);
 			} catch (err) {
-				console.warn(
+				this[loggerSymbol]?.warn?.(
 					Messages.format(Messages.PASS_SOURCE.INVALID, err),
 				);
 				return;
@@ -448,7 +452,7 @@ export default class PKPass extends Bundle {
 			try {
 				validateJSONBuffer(buffer, Schemas.Personalize);
 			} catch (err) {
-				console.warn(
+				this[loggerSymbol]?.warn?.(
 					Messages.format(Messages.PERSONALIZE.INVALID, err),
 				);
 				return;
@@ -522,14 +526,14 @@ export default class PKPass extends Bundle {
 		} = data;
 
 		if (Object.keys(this[propsSymbol]).length) {
-			console.warn(Messages.PASS_SOURCE.JOIN);
+			this[loggerSymbol]?.warn?.(Messages.PASS_SOURCE.JOIN);
 		}
 
 		Object.assign(this[propsSymbol], otherPassData);
 
 		if (!type) {
 			if (!this[passTypeSymbol]) {
-				console.warn(Messages.PASS_SOURCE.UNKNOWN_TYPE);
+				this[loggerSymbol]?.warn?.(Messages.PASS_SOURCE.UNKNOWN_TYPE);
 			}
 		} else {
 			this.type = type;
@@ -589,7 +593,7 @@ export default class PKPass extends Bundle {
 		super.addBuffer("pass.json", passJson);
 
 		if (!fileNames.some((fileName) => RegExps.PASS_ICON.test(fileName))) {
-			console.warn(Messages.CLOSE.MISSING_ICON);
+			this[loggerSymbol]?.warn?.(Messages.CLOSE.MISSING_ICON);
 		}
 
 		// *********************************** //
@@ -628,7 +632,7 @@ export default class PKPass extends Bundle {
 
 			for (let i = 0; i < fileNames.length; i++) {
 				if (fileNames[i].includes("personalization")) {
-					console.warn(
+					this[loggerSymbol]?.warn?.(
 						Messages.format(
 							Messages.CLOSE.PERSONALIZATION_REMOVED,
 							fileNames[i],
@@ -773,7 +777,7 @@ export default class PKPass extends Bundle {
 		}
 
 		if (!translations || !Object.keys(translations).length) {
-			console.warn(
+			this[loggerSymbol]?.warn?.(
 				Messages.format(Messages.LANGUAGES.NO_TRANSLATIONS, lang),
 			);
 			return;
@@ -842,6 +846,7 @@ export default class PKPass extends Bundle {
 		this[propsSymbol]["beacons"] = Schemas.filterValid(
 			Schemas.Beacon,
 			beacons as Schemas.Beacon[],
+			this[loggerSymbol],
 		);
 	}
 
@@ -878,6 +883,7 @@ export default class PKPass extends Bundle {
 		this[propsSymbol]["locations"] = Schemas.filterValid(
 			Schemas.Location,
 			locations as Schemas.Location[],
+			this[loggerSymbol],
 		);
 	}
 
@@ -956,6 +962,7 @@ export default class PKPass extends Bundle {
 			finalBarcodes = Schemas.filterValid(
 				Schemas.Barcode,
 				barcodes as Schemas.Barcode[],
+				this[loggerSymbol],
 			);
 		}
 

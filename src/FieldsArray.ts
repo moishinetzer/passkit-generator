@@ -10,10 +10,12 @@ import * as Messages from "./messages";
 
 const passInstanceSymbol = Symbol("passInstance");
 const sharedKeysPoolSymbol = Symbol("keysPool");
+const faLoggerSymbol = Symbol("fa.logger");
 
 export default class FieldsArray extends Array<Schemas.Field> {
 	private [passInstanceSymbol]: InstanceType<typeof PKPass>;
 	private [sharedKeysPoolSymbol]: Set<string>;
+	private [faLoggerSymbol]: Schemas.Logger;
 
 	constructor(
 		passInstance: InstanceType<typeof PKPass>,
@@ -22,12 +24,17 @@ export default class FieldsArray extends Array<Schemas.Field> {
 		...args: Schemas.Field[]
 	) {
 		super(...args);
+		this[faLoggerSymbol] = logger;
 		this[passInstanceSymbol] = passInstance;
 		this[sharedKeysPoolSymbol] = keysPool;
 	}
 
 	push(...items: Schemas.Field[]): number {
-		const validItems = registerWithValidation(this, ...items);
+		const validItems = registerWithValidation(
+			this,
+			this[faLoggerSymbol],
+			...items,
+		);
 		return super.push(...validItems);
 	}
 
@@ -41,7 +48,11 @@ export default class FieldsArray extends Array<Schemas.Field> {
 		...items: Schemas.Field[]
 	): Schemas.Field[] {
 		// Perfoming frozen check, validation and getting valid items
-		const validItems = registerWithValidation(this, ...items);
+		const validItems = registerWithValidation(
+			this,
+			this[faLoggerSymbol],
+			...items,
+		);
 
 		for (let i = start; i < start + deleteCount; i++) {
 			this[sharedKeysPoolSymbol].delete(this[i].key);
@@ -55,13 +66,18 @@ export default class FieldsArray extends Array<Schemas.Field> {
 	}
 
 	unshift(...items: Schemas.Field[]) {
-		const validItems = registerWithValidation(this, ...items);
+		const validItems = registerWithValidation(
+			this,
+			this[faLoggerSymbol],
+			...items,
+		);
 		return super.unshift(...validItems);
 	}
 }
 
 function registerWithValidation(
 	instance: InstanceType<typeof FieldsArray>,
+	logger: Schemas.Logger,
 	...items: Schemas.Field[]
 ) {
 	Utils.assertUnfrozen(instance[passInstanceSymbol]);
@@ -70,7 +86,7 @@ function registerWithValidation(
 
 	for (const field of items) {
 		if (!field) {
-			console.warn(Messages.format(Messages.FIELDS.INVALID, field));
+			logger?.warn?.(Messages.format(Messages.FIELDS.INVALID, field));
 			continue;
 		}
 
@@ -79,6 +95,7 @@ function registerWithValidation(
 				Schemas.Field,
 				field,
 				Messages.FIELDS.INVALID,
+				logger,
 			);
 
 			if (instance[sharedKeysPoolSymbol].has(field.key)) {
@@ -90,7 +107,7 @@ function registerWithValidation(
 			instance[sharedKeysPoolSymbol].add(field.key);
 			validItems.push(field);
 		} catch (err) {
-			console.warn(err.message ? err.message : err);
+			logger?.warn?.(err.message ? err.message : err);
 		}
 	}
 

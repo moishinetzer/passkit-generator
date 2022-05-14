@@ -185,12 +185,13 @@ export function assertValidity<T>(
 	schema: Joi.ObjectSchema<T> | Joi.StringSchema,
 	data: T,
 	customErrorMessage?: string,
+	logger?: Logger,
 ): void {
 	const validation = schema.validate(data);
 
 	if (validation.error) {
 		if (customErrorMessage) {
-			console.warn(validation.error);
+			logger?.warn?.(validation.error);
 			throw new TypeError(
 				`${validation.error.name} happened. ${Messages.format(
 					customErrorMessage,
@@ -232,6 +233,7 @@ export function validate<T extends Object>(
 export function filterValid<T extends Object>(
 	schema: Joi.ObjectSchema<T>,
 	source: T[],
+	logger?: Logger,
 ): T[] {
 	if (!source) {
 		return [];
@@ -241,7 +243,7 @@ export function filterValid<T extends Object>(
 		try {
 			return [...acc, validate(schema, current)];
 		} catch (err) {
-			console.warn(Messages.format(Messages.FILTER_VALID.INVALID, err));
+			logger?.warn(Messages.format(Messages.FILTER_VALID.INVALID, err));
 			return [...acc];
 		}
 	}, []);

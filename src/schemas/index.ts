@@ -161,9 +161,9 @@ export interface Template {
 }
 
 export interface Logger {
-	log?(message: string): void;
-	info?(message: string): void;
-	warn?(message: string): void;
+	log?(message: unknown): void;
+	info?(message: unknown): void;
+	warn?(message: unknown): void;
 }
 
 export const Template = Joi.object<Template>({

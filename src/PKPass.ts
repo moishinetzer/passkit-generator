@@ -19,6 +19,8 @@ export const closePassSymbol = Symbol("pass.close");
 export const passTypeSymbol = Symbol("pass.type");
 export const certificatesSymbol = Symbol("pass.certificates");
 
+const loggerSymbol = Symbol("pass.logger");
+
 const RegExps = {
 	PASS_JSON: /pass\.json/,
 	MANIFEST_OR_SIGNATURE: /manifest|signature/,
@@ -38,6 +40,7 @@ export default class PKPass extends Bundle {
 			[placeholder: string]: string;
 		};
 	} = {};
+	private [loggerSymbol]: Schemas.Logger;
 	private [passTypeSymbol]: Schemas.PassTypesProps | undefined = undefined;
 
 	/**
@@ -54,6 +57,7 @@ export default class PKPass extends Bundle {
 	): Promise<PKPass> {
 		let certificates: Schemas.CertificatesSchema | undefined = undefined;
 		let buffers: Schemas.FileBuffers | undefined = undefined;
+		let logger: Schemas.Logger | undefined = undefined;
 
 		if (!source) {
 			throw new TypeError(
@@ -64,6 +68,7 @@ export default class PKPass extends Bundle {
 		if (source instanceof PKPass) {
 			/** Cloning is happening here */
 			certificates = source[certificatesSymbol];
+			logger = source[loggerSymbol];
 			buffers = {};
 
 			const buffersEntries = Object.entries(source[filesSymbol]);
@@ -94,9 +99,10 @@ export default class PKPass extends Bundle {
 
 			buffers = await getModelFolderContents(source.model);
 			certificates = source.certificates;
+			logger = source.logger;
 		}
 
-		return new PKPass(buffers, certificates, props);
+		return new PKPass(buffers, certificates, props, logger);
 	}
 
 	/**
@@ -140,8 +146,10 @@ export default class PKPass extends Bundle {
 		buffers?: Schemas.FileBuffers,
 		certificates?: Schemas.CertificatesSchema,
 		props?: Schemas.OverridablePassProps,
+		logger?: Schemas.Logger,
 	) {
 		super("application/vnd.apple.pkpass");
+		this[loggerSymbol] = logger;
 
 		if (buffers && typeof buffers === "object") {
 			const buffersEntries = Object.entries(buffers);
@@ -351,14 +359,15 @@ export default class PKPass extends Bundle {
 		}
 
 		const sharedKeysPool = new Set<string>();
+		const logger = this[loggerSymbol];
 
 		this[passTypeSymbol] = type;
 		this[propsSymbol][this[passTypeSymbol]] = {
-			headerFields /******/: new FieldsArray(this, sharedKeysPool),
-			primaryFields /*****/: new FieldsArray(this, sharedKeysPool),
-			secondaryFields /***/: new FieldsArray(this, sharedKeysPool),
-			auxiliaryFields /***/: new FieldsArray(this, sharedKeysPool),
-			backFields /********/: new FieldsArray(this, sharedKeysPool),
+			headerFields /*****/: new FieldsArray(this, sharedKeysPool, logger),
+			primaryFields /****/: new FieldsArray(this, sharedKeysPool, logger),
+			secondaryFields /**/: new FieldsArray(this, sharedKeysPool, logger),
+			auxiliaryFields /**/: new FieldsArray(this, sharedKeysPool, logger),
+			backFields /*******/: new FieldsArray(this, sharedKeysPool, logger),
 			transitType: undefined,
 		};
 	}

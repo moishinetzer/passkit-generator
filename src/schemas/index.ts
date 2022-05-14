@@ -157,6 +157,13 @@ export const PassProps = Joi.object<
 export interface Template {
 	model: string;
 	certificates?: CertificatesSchema;
+	logger?: Logger;
+}
+
+export interface Logger {
+	log?(message: string): void;
+	info?(message: string): void;
+	warn?(message: string): void;
 }
 
 export const Template = Joi.object<Template>({

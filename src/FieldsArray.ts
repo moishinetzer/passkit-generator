@@ -18,6 +18,7 @@ export default class FieldsArray extends Array<Schemas.Field> {
 	constructor(
 		passInstance: InstanceType<typeof PKPass>,
 		keysPool: Set<string>,
+		logger?: Schemas.Logger,
 		...args: Schemas.Field[]
 	) {
 		super(...args);

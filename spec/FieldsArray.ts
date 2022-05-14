@@ -17,6 +17,9 @@ describe("FieldsArray", () => {
 				},
 			} as PKPass /** Fake pass. This is okay for testing */,
 			pool,
+			{
+				warn: (message: string) => console.warn(message),
+			},
 		);
 	});
 

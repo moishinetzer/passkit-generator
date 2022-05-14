@@ -26,13 +26,17 @@ describe("PKPass", () => {
 	};
 
 	beforeEach(() => {
-		pass = new PKPass({});
+		pass = new PKPass({}, undefined, undefined, {
+			warn: (message: string) => console.warn(message),
+		});
 		console.warn = jasmine.createSpy("warn_logging");
 	});
 
 	describe("constructor", () => {
 		it("should warn about a non-object buffer parameter", () => {
-			pass = new PKPass(undefined, baseCerts);
+			pass = new PKPass(undefined, baseCerts, undefined, {
+				warn: (message: string) => console.warn(message),
+			});
 
 			expect(console.warn).toHaveBeenCalledWith(
 				Messages.INIT.INVALID_BUFFERS.replace("%s", "undefined"),

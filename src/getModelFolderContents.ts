@@ -1,7 +1,7 @@
-import * as path from "path";
+import * as path from "node:path";
 import * as Utils from "./utils";
 import * as Messages from "./messages";
-import { promises as fs } from "fs";
+import { promises as fs } from "node:fs";
 import type { Buffer } from "buffer";
 
 /**

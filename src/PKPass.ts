@@ -1,6 +1,6 @@
-import { Stream } from "stream";
+import { Stream } from "node:stream";
 import { Buffer } from "buffer";
-import path from "path";
+import path from "node:path";
 import FieldsArray from "./FieldsArray";
 import Bundle, { filesSymbol } from "./Bundle";
 import getModelFolderContents from "./getModelFolderContents";

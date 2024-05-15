@@ -1,7 +1,7 @@
 import { ALBEvent, ALBResult } from "aws-lambda";
 import AWS from "aws-sdk";
-import { promises as fs } from "fs";
-import path from "path";
+import { promises as fs } from "node:fs";
+import path from "node:path";
 import { Buffer } from "buffer";
 import config from "../config.json";
 import { PKPass } from "passkit-generator";
